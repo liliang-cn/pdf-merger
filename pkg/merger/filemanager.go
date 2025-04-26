@@ -8,70 +8,70 @@ import (
 	"time"
 )
 
-// 临时文件目录
+// Temporary file directory prefix
 const TempDirPrefix = "file-merger-tmp-"
 
-// 文件上传的结果信息结构
+// File upload result information structure
 type FileUploadResult struct {
 	Success      bool   `json:"success"`
 	FilePath     string `json:"filePath,omitempty"`
 	TempDir      string `json:"tempDir,omitempty"`
 	FileName     string `json:"fileName,omitempty"`
 	FileSize     int64  `json:"fileSize,omitempty"`
-	FileType     string `json:"fileType,omitempty"` // 文件类型：pdf 或 markdown
+	FileType     string `json:"fileType,omitempty"` // File type: pdf or markdown
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
-// CreateTempDirectory 创建临时目录
+// CreateTempDirectory creates a temporary directory
 func CreateTempDirectory() (string, error) {
-	// 创建带有时间戳的临时目录名称
+	// Create temporary directory name with timestamp
 	timestamp := time.Now().Format("20060102-150405")
 	tempDirName := TempDirPrefix + timestamp
 
-	// 在系统临时目录下创建子目录
+	// Create a subdirectory in the system temporary directory
 	tempDir := filepath.Join(os.TempDir(), tempDirName)
 
-	// 创建目录
+	// Create the directory
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
-		return "", fmt.Errorf("创建临时目录失败: %v", err)
+		return "", fmt.Errorf("Failed to create temporary directory: %v", err)
 	}
 
 	return tempDir, nil
 }
 
-// SaveUploadedFile 保存上传的文件到临时目录
+// SaveUploadedFile saves uploaded file to a temporary directory
 func SaveUploadedFile(fileReader io.Reader, fileName string, tempDir string) (*FileUploadResult, error) {
-	// 如果未提供临时目录，则创建一个新的
+	// If no temporary directory is provided, create a new one
 	var err error
 	if tempDir == "" {
 		tempDir, err = CreateTempDirectory()
 		if err != nil {
 			return &FileUploadResult{
 				Success:      false,
-				ErrorMessage: fmt.Sprintf("创建临时目录失败: %v", err),
+				ErrorMessage: fmt.Sprintf("Failed to create temporary directory: %v", err),
 			}, err
 		}
 	}
 
-	// 创建新文件
+	// Create new file
 	filePath := filepath.Join(tempDir, fileName)
 	file, err := os.Create(filePath)
 	if err != nil {
 		return &FileUploadResult{
 			Success:      false,
 			TempDir:      tempDir,
-			ErrorMessage: fmt.Sprintf("创建文件失败: %v", err),
+			ErrorMessage: fmt.Sprintf("Failed to create file: %v", err),
 		}, err
 	}
 	defer file.Close()
 
-	// 将上传的内容写入文件
+	// Write uploaded content to file
 	written, err := io.Copy(file, fileReader)
 	if err != nil {
 		return &FileUploadResult{
 			Success:      false,
 			TempDir:      tempDir,
-			ErrorMessage: fmt.Sprintf("写入文件失败: %v", err),
+			ErrorMessage: fmt.Sprintf("Failed to write to file: %v", err),
 		}, err
 	}
 
@@ -84,36 +84,36 @@ func SaveUploadedFile(fileReader io.Reader, fileName string, tempDir string) (*F
 	}, nil
 }
 
-// CleanTempDirectory 清理临时目录
+// CleanTempDirectory cleans up temporary directory
 func CleanTempDirectory(tempDir string) error {
-	// 检查目录名是否以我们的临时目录前缀开头，以避免删除其他目录
+	// Check if directory name starts with our temporary directory prefix to avoid deleting other directories
 	dirName := filepath.Base(tempDir)
 	if len(dirName) < len(TempDirPrefix) || dirName[:len(TempDirPrefix)] != TempDirPrefix {
-		return fmt.Errorf("不是有效的临时目录: %s", tempDir)
+		return fmt.Errorf("Not a valid temporary directory: %s", tempDir)
 	}
 
-	// 删除目录及其全部内容
+	// Remove directory and all its contents
 	return os.RemoveAll(tempDir)
 }
 
-// ListFilesInTempDir 列出临时目录中的所有文件
+// ListFilesInTempDir lists all files in the temporary directory
 func ListFilesInTempDir(tempDir string) ([]string, error) {
-	// 检查目录是否存在
+	// Check if directory exists
 	info, err := os.Stat(tempDir)
 	if err != nil {
-		return nil, fmt.Errorf("访问临时目录失败: %v", err)
+		return nil, fmt.Errorf("Failed to access temporary directory: %v", err)
 	}
 	if !info.IsDir() {
-		return nil, fmt.Errorf("%s 不是一个目录", tempDir)
+		return nil, fmt.Errorf("%s is not a directory", tempDir)
 	}
 
-	// 读取目录内容
+	// Read directory contents
 	files, err := os.ReadDir(tempDir)
 	if err != nil {
-		return nil, fmt.Errorf("读取目录内容失败: %v", err)
+		return nil, fmt.Errorf("Failed to read directory contents: %v", err)
 	}
 
-	// 收集文件路径
+	// Collect file paths
 	var filePaths []string
 	for _, file := range files {
 		if !file.IsDir() {

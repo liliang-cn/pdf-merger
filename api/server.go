@@ -13,55 +13,55 @@ import (
 	"github.com/liliang-cn/pdf-merger/pkg/merger"
 )
 
-// MergeRequest 表示合并PDF请求的JSON结构
+// MergeRequest represents the JSON structure for a PDF merge request
 type MergeRequest struct {
 	InputDir   string `json:"inputDir"`
 	OutputFile string `json:"outputFile"`
 }
 
-// MergeMdRequest 表示合并Markdown请求的JSON结构
+// MergeMdRequest represents the JSON structure for a Markdown merge request
 type MergeMdRequest struct {
 	InputDir   string `json:"inputDir"`
 	OutputFile string `json:"outputFile"`
 	AddTitles  bool   `json:"addTitles"`
 }
 
-// TempDirRequest 表示请求新临时目录的JSON结构
+// TempDirRequest represents the JSON structure for a new temporary directory request
 type TempDirRequest struct {
 	Purpose string `json:"purpose,omitempty"`
 }
 
-// FileUploadInfo 表示上传的文件信息
+// FileUploadInfo represents information about uploaded files
 type FileUploadInfo struct {
 	TempDir  string   `json:"tempDir"`
 	Files    []string `json:"files"`
-	FileType string   `json:"fileType"` // 'pdf' 或 'markdown'
+	FileType string   `json:"fileType"` // 'pdf' or 'markdown'
 }
 
-// MergeFilesRequest 表示合并上传文件的请求结构
+// MergeFilesRequest represents the request structure for merging uploaded files
 type MergeFilesRequest struct {
 	TempDir    string   `json:"tempDir"`
-	FileNames  []string `json:"fileNames,omitempty"` // 可选的文件名列表，若为空则使用目录中的所有文件
+	FileNames  []string `json:"fileNames,omitempty"` // Optional list of filenames, if empty use all files in directory
 	OutputFile string   `json:"outputFile"`
-	AddTitles  bool     `json:"addTitles,omitempty"` // 仅用于Markdown文件
+	AddTitles  bool     `json:"addTitles,omitempty"` // Only for Markdown files
 }
 
-// StartServer 启动API服务器
+// StartServer starts the API server
 func StartServer(port int) error {
 	addr := fmt.Sprintf(":%d", port)
-	fmt.Printf("API服务器启动在 http://localhost%s\n", addr)
-	fmt.Printf("可用端点:\n")
-	fmt.Printf("  POST /api/merge         - 合并PDF文件\n")
-	fmt.Printf("  POST /api/merge-md      - 合并Markdown文件\n")
-	fmt.Printf("  GET  /api/files?dir=... - 列出目录中的PDF文件\n")
-	fmt.Printf("  GET  /api/md-files?dir=... - 列出目录中的Markdown文件\n")
-	fmt.Printf("  POST /api/temp-dir      - 创建新的临时目录\n")
-	fmt.Printf("  POST /api/upload        - 上传文件到临时目录\n")
-	fmt.Printf("  GET  /api/temp-files?dir=... - 列出临时目录中的文件\n")
-	fmt.Printf("  POST /api/merge-files   - 合并临时目录中的文件\n")
-	fmt.Printf("  DELETE /api/temp-dir    - 删除临时目录\n")
+	fmt.Printf("API server started at http://localhost%s\n", addr)
+	fmt.Printf("Available endpoints:\n")
+	fmt.Printf("  POST /api/merge         - Merge PDF files\n")
+	fmt.Printf("  POST /api/merge-md      - Merge Markdown files\n")
+	fmt.Printf("  GET  /api/files?dir=... - List PDF files in directory\n")
+	fmt.Printf("  GET  /api/md-files?dir=... - List Markdown files in directory\n")
+	fmt.Printf("  POST /api/temp-dir      - Create new temporary directory\n")
+	fmt.Printf("  POST /api/upload        - Upload files to temporary directory\n")
+	fmt.Printf("  GET  /api/temp-files?dir=... - List files in temporary directory\n")
+	fmt.Printf("  POST /api/merge-files   - Merge files in temporary directory\n")
+	fmt.Printf("  DELETE /api/temp-dir    - Delete temporary directory\n")
 
-	// 注册API路由处理程序
+	// Register API route handlers
 	http.HandleFunc("/api/merge", handleMerge)
 	http.HandleFunc("/api/merge-md", handleMergeMd)
 	http.HandleFunc("/api/files", handleListFiles)
@@ -75,21 +75,21 @@ func StartServer(port int) error {
 	return http.ListenAndServe(addr, nil)
 }
 
-// handleMerge 处理PDF合并请求
+// handleMerge handles PDF merge requests
 func handleMerge(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "只支持POST方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var req MergeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "无效的JSON请求: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid JSON request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if req.InputDir == "" {
-		http.Error(w, "必须指定输入目录", http.StatusBadRequest)
+		http.Error(w, "Input directory must be specified", http.StatusBadRequest)
 		return
 	}
 
@@ -97,7 +97,7 @@ func handleMerge(w http.ResponseWriter, r *http.Request) {
 		req.OutputFile = "merged.pdf"
 	}
 
-	// 确保输出文件路径是绝对路径
+	// Ensure output file path is absolute
 	if !filepath.IsAbs(req.OutputFile) {
 		absPath, err := filepath.Abs(req.OutputFile)
 		if err == nil {
@@ -105,101 +105,101 @@ func handleMerge(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 调用核心逻辑合并PDF
+	// Call core logic to merge PDFs
 	result, err := merger.MergePDFs(req.InputDir, req.OutputFile, false)
 	if err != nil {
-		http.Error(w, "合并PDF失败: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to merge PDFs: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 返回结果
+	// Return result
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
 
-// handleListFiles 处理列出PDF文件请求
+// handleListFiles handles requests to list PDF files
 func handleListFiles(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "只支持GET方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only GET method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 获取目录参数
+	// Get directory parameter
 	dir := r.URL.Query().Get("dir")
 	if dir == "" {
-		http.Error(w, "必须指定目录参数 '?dir=...'", http.StatusBadRequest)
+		http.Error(w, "Directory parameter '?dir=...' must be specified", http.StatusBadRequest)
 		return
 	}
 
-	// 获取目录中的PDF文件
+	// Get PDF files in the directory
 	files, err := merger.GetPDFFiles(dir)
 	if err != nil {
-		http.Error(w, "获取PDF文件失败: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to get PDF files: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 返回结果
+	// Return result
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(files)
 }
 
-// handleDownload 提供已合并的PDF文件下载
+// handleDownload provides download for merged PDF files
 func handleDownload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "只支持GET方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only GET method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 从URL路径中提取文件路径
+	// Extract file path from URL path
 	filePath := r.URL.Path[len("/api/download/"):]
 	if filePath == "" {
-		http.Error(w, "必须指定文件路径", http.StatusBadRequest)
+		http.Error(w, "File path must be specified", http.StatusBadRequest)
 		return
 	}
 
-	// 检查文件是否存在
+	// Check if file exists
 	file, err := os.Open(filePath)
 	if err != nil {
-		http.Error(w, "无法访问文件: "+err.Error(), http.StatusNotFound)
+		http.Error(w, "Cannot access file: "+err.Error(), http.StatusNotFound)
 		return
 	}
 	defer file.Close()
 
-	// 获取文件信息
+	// Get file information
 	fileInfo, err := file.Stat()
 	if err != nil {
-		http.Error(w, "无法获取文件信息: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Cannot get file information: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 设置响应头
+	// Set response headers
 	w.Header().Set("Content-Disposition", "attachment; filename="+filepath.Base(filePath))
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
 
-	// 将文件内容写入响应
+	// Write file content to response
 	_, err = io.Copy(w, file)
 	if err != nil {
-		http.Error(w, "传输文件时出错: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error transferring file: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-// handleMergeMd 处理Markdown合并请求
+// handleMergeMd handles Markdown merge requests
 func handleMergeMd(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "只支持POST方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var req MergeMdRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "无效的JSON请求: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid JSON request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if req.InputDir == "" {
-		http.Error(w, "必须指定输入目录", http.StatusBadRequest)
+		http.Error(w, "Input directory must be specified", http.StatusBadRequest)
 		return
 	}
 
@@ -207,7 +207,7 @@ func handleMergeMd(w http.ResponseWriter, r *http.Request) {
 		req.OutputFile = "merged.md"
 	}
 
-	// 确保输出文件路径是绝对路径
+	// Ensure output file path is absolute
 	if !filepath.IsAbs(req.OutputFile) {
 		absPath, err := filepath.Abs(req.OutputFile)
 		if err == nil {
@@ -215,124 +215,124 @@ func handleMergeMd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 调用核心逻辑合并Markdown
+	// Call core logic to merge Markdown
 	result, err := merger.MergeMarkdownFiles(req.InputDir, req.OutputFile, req.AddTitles, false)
 	if err != nil {
-		http.Error(w, "合并Markdown失败: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to merge Markdown: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 返回结果
+	// Return result
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
 
-// handleListMdFiles 处理列出Markdown文件请求
+// handleListMdFiles handles requests to list Markdown files
 func handleListMdFiles(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "只支持GET方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only GET method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 获取目录参数
+	// Get directory parameter
 	dir := r.URL.Query().Get("dir")
 	if dir == "" {
-		http.Error(w, "必须指定目录参数 '?dir=...'", http.StatusBadRequest)
+		http.Error(w, "Directory parameter '?dir=...' must be specified", http.StatusBadRequest)
 		return
 	}
 
-	// 获取目录中的Markdown文件
+	// Get Markdown files in the directory
 	files, err := merger.GetMarkdownFiles(dir)
 	if err != nil {
-		http.Error(w, "获取Markdown文件失败: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to get Markdown files: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 返回结果
+	// Return result
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(files)
 }
 
-// handleTempDir 处理临时目录的创建和删除
+// handleTempDir handles creation and deletion of temporary directories
 func handleTempDir(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		// 创建新的临时目录
+		// Create new temporary directory
 		tempDir, err := merger.CreateTempDirectory()
 		if err != nil {
-			http.Error(w, "创建临时目录失败: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to create temporary directory: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// 返回临时目录路径
+		// Return temporary directory path
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
 			"tempDir": tempDir,
-			"message": "临时目录创建成功",
+			"message": "Temporary directory created successfully",
 		})
 
 	case http.MethodDelete:
-		// 删除现有临时目录
+		// Delete existing temporary directory
 		var req map[string]string
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "无效的JSON请求: "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Invalid JSON request: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		tempDir := req["tempDir"]
 		if tempDir == "" {
-			http.Error(w, "必须指定临时目录路径", http.StatusBadRequest)
+			http.Error(w, "Temporary directory path must be specified", http.StatusBadRequest)
 			return
 		}
 
-		// 删除目录
+		// Delete directory
 		if err := merger.CleanTempDirectory(tempDir); err != nil {
-			http.Error(w, "删除临时目录失败: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to delete temporary directory: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// 返回成功信息
+		// Return success information
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
-			"message": "临时目录已成功删除",
+			"message": "Temporary directory successfully deleted",
 		})
 
 	default:
-		http.Error(w, "不支持的HTTP方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Unsupported HTTP method", http.StatusMethodNotAllowed)
 	}
 }
 
-// handleFileUpload 处理文件上传到临时目录
+// handleFileUpload handles file upload to temporary directory
 func handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "只支持POST方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 设置最大文件大小（100MB）
+	// Set maximum file size (100MB)
 	r.ParseMultipartForm(100 << 20)
 
-	// 获取临时目录
+	// Get temporary directory
 	tempDir := r.FormValue("tempDir")
 	if tempDir == "" {
-		// 如果未提供，则创建一个新的临时目录
+		// If not provided, create a new temporary directory
 		var err error
 		tempDir, err = merger.CreateTempDirectory()
 		if err != nil {
-			http.Error(w, "创建临时目录失败: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to create temporary directory: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 
-	// 获取上传的文件
+	// Get uploaded file
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "获取上传的文件失败: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Failed to get uploaded file: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
 
-	// 验证文件类型（仅支持PDF和Markdown）
+	// Verify file type (only PDF and Markdown supported)
 	fileName := header.Filename
 	fileExt := strings.ToLower(filepath.Ext(fileName))
 
@@ -342,47 +342,47 @@ func handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	} else if fileExt == ".md" || fileExt == ".markdown" {
 		fileType = "markdown"
 	} else {
-		http.Error(w, "不支持的文件类型，只允许上传PDF或Markdown文件", http.StatusBadRequest)
+		http.Error(w, "Unsupported file type, only PDF or Markdown files are allowed", http.StatusBadRequest)
 		return
 	}
 
-	// 保存文件
+	// Save file
 	result, err := merger.SaveUploadedFile(file, fileName, tempDir)
 	if err != nil {
-		http.Error(w, "保存上传的文件失败: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to save uploaded file: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 添加文件类型信息
+	// Add file type information
 	result.FileType = fileType
 
-	// 返回结果
+	// Return result
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
 
-// handleListTempFiles 获取临时目录中的文件列表
+// handleListTempFiles gets list of files in temporary directory
 func handleListTempFiles(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "只支持GET方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only GET method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// 获取临时目录参数
+	// Get temporary directory parameter
 	tempDir := r.URL.Query().Get("dir")
 	if tempDir == "" {
-		http.Error(w, "必须指定临时目录参数 '?dir=...'", http.StatusBadRequest)
+		http.Error(w, "Directory parameter '?dir=...' must be specified", http.StatusBadRequest)
 		return
 	}
 
-	// 获取目录中的文件
+	// Get files in directory
 	files, err := merger.ListFilesInTempDir(tempDir)
 	if err != nil {
-		http.Error(w, "获取临时目录中的文件失败: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to get files in temporary directory: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 区分PDF和Markdown文件
+	// Distinguish PDF and Markdown files
 	var pdfFiles []string
 	var mdFiles []string
 
@@ -395,7 +395,7 @@ func handleListTempFiles(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 返回结果
+	// Return result
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"tempDir":    tempDir,
@@ -406,30 +406,30 @@ func handleListTempFiles(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMergeUploadedFiles 处理合并上传的文件
+// handleMergeUploadedFiles handles merging of uploaded files
 func handleMergeUploadedFiles(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "只支持POST方法", http.StatusMethodNotAllowed)
+		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var req MergeFilesRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "无效的JSON请求: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid JSON request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if req.TempDir == "" {
-		http.Error(w, "必须指定临时目录", http.StatusBadRequest)
+		http.Error(w, "Temporary directory must be specified", http.StatusBadRequest)
 		return
 	}
 
 	if req.OutputFile == "" {
-		http.Error(w, "必须指定输出文件名", http.StatusBadRequest)
+		http.Error(w, "Output file name must be specified", http.StatusBadRequest)
 		return
 	}
 
-	// 确保输出文件路径是绝对路径
+	// Ensure output file path is absolute
 	if !filepath.IsAbs(req.OutputFile) {
 		absPath, err := filepath.Abs(req.OutputFile)
 		if err == nil {
@@ -440,48 +440,48 @@ func handleMergeUploadedFiles(w http.ResponseWriter, r *http.Request) {
 	var result *merger.MergeResult
 	var err error
 
-	// 获取临时目录中的所有文件
+	// Get all files in the temporary directory
 	var filesToMerge []string
 
 	if len(req.FileNames) > 0 {
-		// 使用指定的文件名
+		// Use specified filenames
 		for _, fileName := range req.FileNames {
 			filesToMerge = append(filesToMerge, filepath.Join(req.TempDir, fileName))
 		}
 	} else {
-		// 使用目录中的所有文件
+		// Use all files in the directory
 		filesToMerge, err = merger.ListFilesInTempDir(req.TempDir)
 		if err != nil {
-			http.Error(w, "获取临时目录中的文件失败: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to get files in temporary directory: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	if len(filesToMerge) == 0 {
-		http.Error(w, "没有找到要合并的文件", http.StatusBadRequest)
+		http.Error(w, "No files found to merge", http.StatusBadRequest)
 		return
 	}
 
-	// 根据第一个文件的扩展名判断文件类型
+	// Determine file type based on extension of first file
 	fileExt := strings.ToLower(filepath.Ext(filesToMerge[0]))
 
 	if fileExt == ".pdf" {
-		// 合并PDF文件
+		// Merge PDF files
 		result, err = merger.MergePDFFiles(filesToMerge, req.OutputFile, false)
 	} else if fileExt == ".md" || fileExt == ".markdown" {
-		// 合并Markdown文件
+		// Merge Markdown files
 		result, err = merger.MergeMarkdownFilesList(filesToMerge, req.OutputFile, req.AddTitles, false)
 	} else {
-		http.Error(w, "不支持的文件类型，只能合并PDF或Markdown文件", http.StatusBadRequest)
+		http.Error(w, "Unsupported file type, can only merge PDF or Markdown files", http.StatusBadRequest)
 		return
 	}
 
 	if err != nil {
-		http.Error(w, "合并文件失败: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to merge files: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// 返回结果
+	// Return result
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
