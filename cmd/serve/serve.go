@@ -1,7 +1,7 @@
 package serve
 
 import (
-	"pdf-merger/api"
+	"github.com/liliang-cn/pdf-merger/api"
 
 	"github.com/spf13/cobra"
 )

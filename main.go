@@ -1,6 +1,6 @@
 package main
 
-import "pdf-merger/cmd"
+import "github.com/liliang-cn/pdf-merger/cmd"
 
 func main() {
 	cmd.Execute()

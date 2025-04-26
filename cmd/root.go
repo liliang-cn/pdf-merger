@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"os"
-	"pdf-merger/cmd/merge"
-	mergemd "pdf-merger/cmd/merge-md"
-	"pdf-merger/cmd/serve"
+
+	"github.com/liliang-cn/pdf-merger/cmd/merge"
+	mergemd "github.com/liliang-cn/pdf-merger/cmd/merge-md"
+	"github.com/liliang-cn/pdf-merger/cmd/serve"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +21,7 @@ func Execute() {
 
 func init() {
 	rootCmd = &cobra.Command{
-		Use:   "pdf-merger",
+		Use:   "file-merger",
 		Short: "文件合并工具",
 		Long:  `一个合并PDF文件和Markdown文件的命令行工具和API服务器，能够将指定目录下的所有文件合并为一个文件，并按照字符顺序排序。`,
 	}

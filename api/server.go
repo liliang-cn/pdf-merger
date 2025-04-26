@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"pdf-merger/pkg/merger"
 	"strconv"
 	"strings"
+
+	"github.com/liliang-cn/pdf-merger/pkg/merger"
 )
 
 // MergeRequest 表示合并PDF请求的JSON结构

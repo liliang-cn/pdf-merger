@@ -1,4 +1,4 @@
-module pdf-merger
+module github.com/liliang-cn/pdf-merger
 
 go 1.24.1
 

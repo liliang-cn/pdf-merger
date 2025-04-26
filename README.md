@@ -15,20 +15,37 @@ A powerful file merging tool that can combine PDF and Markdown files in alphanum
 - Command-line Interface: Easy-to-use CLI tool built with the Cobra framework
 - HTTP API: RESTful API interface for remote operation
 - Batch Processing: Process all files of the same type in a directory at once
+- Multi-platform Support: Available for Linux, macOS (including Apple Silicon), and Windows
 
 ## Installation
 
+### Using Go Install (Recommended)
+
+The easiest way to install File Merger is with Go's built-in `go install` command:
+
+```bash
+go install github.com/liliang-cn/pdf-merger@latest
+```
+
+This command will download, compile, and install the latest version of File Merger to your `$GOPATH/bin` directory. Make sure this directory is in your system's PATH.
+
+### Download Pre-built Binaries
+
+Visit the [GitHub Releases](https://github.com/liliang-cn/pdf-merger/releases) page to download pre-compiled binaries for your operating system. We provide binaries for:
+
+- Linux (amd64)
+- macOS (Intel/amd64 and Apple Silicon/arm64)
+- Windows (amd64)
+
 ### Build from Source
+
+You can also build from source if you prefer:
 
 ```bash
 git clone https://github.com/liliang-cn/pdf-merger.git
 cd pdf-merger
 go build -o file-merger
 ```
-
-### Download Pre-built Binaries
-
-Visit the [GitHub Releases](https://github.com/liliang-cn/pdf-merger/releases) page to download pre-compiled binaries for your operating system.
 
 ## Usage
 
@@ -37,19 +54,19 @@ Visit the [GitHub Releases](https://github.com/liliang-cn/pdf-merger/releases) p
 **View help information:**
 
 ```bash
-./file-merger --help
+file-merger --help
 ```
 
 **Merge PDF files (directory mode):**
 
 ```bash
-./file-merger merge -i <input_directory> -o <output_file.pdf> -v
+file-merger merge -i <input_directory> -o <output_file.pdf> -v
 ```
 
 **Merge PDF files (specific files mode):**
 
 ```bash
-./file-merger merge -f <file1.pdf> <file2.pdf> <file3.pdf> -o <output_file.pdf> -v
+file-merger merge -f <file1.pdf> <file2.pdf> <file3.pdf> -o <output_file.pdf> -v
 ```
 
 Parameter description:
@@ -62,13 +79,13 @@ Parameter description:
 **Merge Markdown files (directory mode):**
 
 ```bash
-./file-merger merge-md -i <input_directory> -o <output_file.md>
+file-merger merge-md -i <input_directory> -o <output_file.md>
 ```
 
 **Merge Markdown files (specific files mode):**
 
 ```bash
-./file-merger merge-md -f <file1.md> <file2.md> <file3.md> -o <output_file.md>
+file-merger merge-md -f <file1.md> <file2.md> <file3.md> -o <output_file.md>
 ```
 
 Parameter description:
@@ -84,7 +101,7 @@ Parameter description:
 **Start the API server:**
 
 ```bash
-./file-merger serve -p 8080
+file-merger serve -p 8080
 ```
 
 Parameter description:
@@ -170,25 +187,25 @@ curl -X DELETE "http://localhost:8080/api/temp-dir" \
 ### Merge all PDF tutorials
 
 ```bash
-./file-merger merge -i ./PDF -o "Kubernetes_Tutorials.pdf" -v
+file-merger merge -i ./PDF -o "Kubernetes_Tutorials.pdf" -v
 ```
 
 ### Merge specific PDF files (supporting absolute paths)
 
 ```bash
-./file-merger merge -f "/Users/liliang/Things/backend/common/PDF/01_intro_to_containers.pdf" "/Users/liliang/Things/backend/common/PDF/02_isolated_processes.pdf" -o "k8s_intro.pdf" -v
+file-merger merge -f "/Users/liliang/Things/backend/common/PDF/01_intro_to_containers.pdf" "/Users/liliang/Things/backend/common/PDF/02_isolated_processes.pdf" -o "k8s_intro.pdf" -v
 ```
 
 ### Merge all Markdown notes with titles
 
 ```bash
-./file-merger merge-md -i ./notes -o "combined_notes.md" -t -v
+file-merger merge-md -i ./notes -o "combined_notes.md" -t -v
 ```
 
 ### Merge specific Markdown files
 
 ```bash
-./file-merger merge-md -f "intro.md" "chapter1.md" "chapter2.md" -o "document.md" -v
+file-merger merge-md -f "intro.md" "chapter1.md" "chapter2.md" -o "document.md" -v
 ```
 
 ## Dependencies
@@ -199,7 +216,7 @@ curl -X DELETE "http://localhost:8080/api/temp-dir" \
 ## Project Structure
 
 ```
-pdf-merger/
+file-merger/
 ├── api/                 # API server implementation
 │   └── server.go        # HTTP API handling logic
 ├── cmd/                 # Command-line interface implementation
@@ -224,6 +241,10 @@ pdf-merger/
 - Process files with arbitrary paths (including absolute paths)
 - Call the API from different devices for file merging
 - Integrate into other systems as a file processing service
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
 
 ## License
 

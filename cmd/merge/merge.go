@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"pdf-merger/pkg/merger"
+
+	"github.com/liliang-cn/pdf-merger/pkg/merger"
 
 	"github.com/spf13/cobra"
 )
