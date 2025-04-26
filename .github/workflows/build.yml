@@ -20,17 +20,14 @@ jobs:
           - os: ubuntu-latest
             goos: linux
             goarch: amd64
-            ext: ""
             output: file-merger-linux-amd64
           - os: macos-latest
             goos: darwin
             goarch: amd64
-            ext: ""
             output: file-merger-darwin-amd64
           - os: windows-latest
             goos: windows
             goarch: amd64
-            ext: ".exe"
             output: file-merger-windows-amd64.exe
 
     steps:
@@ -62,13 +59,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download all workflow run artifacts
+      - name: Create Release Directory
+        run: mkdir -p release
+
+      - name: Download Linux Artifact
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: file-merger-linux-amd64
+          path: release
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: file-merger-darwin-amd64
+          path: release
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: file-merger-windows-amd64.exe
+          path: release
 
       - name: Display structure of downloaded files
-        run: find artifacts -type f | sort
+        run: |
+          ls -la release/
+          chmod +x release/file-merger-linux-amd64
+          chmod +x release/file-merger-darwin-amd64
+          # Windows .exe 文件不需要设置可执行权限
 
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
@@ -80,6 +97,6 @@ jobs:
           draft: false
           prerelease: true
           files: |
-            artifacts/file-merger-linux-amd64
-            artifacts/file-merger-darwin-amd64
-            artifacts/file-merger-windows-amd64.exe
+            release/file-merger-linux-amd64
+            release/file-merger-darwin-amd64
+            release/file-merger-windows-amd64.exe
