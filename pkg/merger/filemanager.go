@@ -18,6 +18,7 @@ type FileUploadResult struct {
 	TempDir      string `json:"tempDir,omitempty"`
 	FileName     string `json:"fileName,omitempty"`
 	FileSize     int64  `json:"fileSize,omitempty"`
+	FileType     string `json:"fileType,omitempty"` // 文件类型：pdf 或 markdown
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 

@@ -25,6 +25,10 @@ jobs:
             goos: darwin
             goarch: amd64
             output: file-merger-darwin-amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            output: file-merger-darwin-arm64
           - os: windows-latest
             goos: windows
             goarch: amd64
@@ -68,10 +72,16 @@ jobs:
           name: file-merger-linux-amd64
           path: release
 
-      - name: Download macOS Artifact
+      - name: Download macOS Intel Artifact
         uses: actions/download-artifact@v4
         with:
           name: file-merger-darwin-amd64
+          path: release
+
+      - name: Download macOS ARM64 Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: file-merger-darwin-arm64
           path: release
 
       - name: Download Windows Artifact
@@ -85,6 +95,7 @@ jobs:
           ls -la release/
           chmod +x release/file-merger-linux-amd64
           chmod +x release/file-merger-darwin-amd64
+          chmod +x release/file-merger-darwin-arm64
           # Windows .exe 文件不需要设置可执行权限
 
       - name: Create Release and Upload Assets
@@ -99,4 +110,5 @@ jobs:
           files: |
             release/file-merger-linux-amd64
             release/file-merger-darwin-amd64
+            release/file-merger-darwin-arm64
             release/file-merger-windows-amd64.exe
