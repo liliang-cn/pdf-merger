@@ -64,9 +64,11 @@ jobs:
     steps:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
       - name: Display structure of downloaded files
-        run: find . -type f | sort
+        run: find artifacts -type f | sort
 
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
@@ -78,6 +80,6 @@ jobs:
           draft: false
           prerelease: true
           files: |
-            ./file-merger-linux-amd64
-            ./file-merger-darwin-amd64
-            ./file-merger-windows-amd64.exe
+            artifacts/file-merger-linux-amd64
+            artifacts/file-merger-darwin-amd64
+            artifacts/file-merger-windows-amd64.exe
