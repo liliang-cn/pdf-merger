@@ -37,11 +37,21 @@ func MergePDFs(inputDir, outputFile string, verbose bool) (*MergeResult, error) 
 	// 检查输入目录是否存在
 	info, err := os.Stat(inputDir)
 	if err != nil {
+		// 增加处理绝对路径的错误信息
+		errMsg := fmt.Sprintf("无法访问输入目录 %s: %v", inputDir, err)
+		if os.IsNotExist(err) {
+			if filepath.IsAbs(inputDir) {
+				errMsg = fmt.Sprintf("指定的绝对路径目录不存在: %s", inputDir)
+			} else {
+				errMsg = fmt.Sprintf("指定的目录不存在: %s", inputDir)
+			}
+		}
 		return &MergeResult{
 			Success:      false,
-			ErrorMessage: fmt.Sprintf("无法访问输入目录 %s: %v", inputDir, err),
+			ErrorMessage: errMsg,
 		}, err
 	}
+
 	if !info.IsDir() {
 		return &MergeResult{
 			Success:      false,
@@ -148,11 +158,21 @@ func MergeMarkdownFiles(inputDir, outputFile string, addTitles bool, verbose boo
 	// 检查输入目录是否存在
 	info, err := os.Stat(inputDir)
 	if err != nil {
+		// 增加处理绝对路径的错误信息
+		errMsg := fmt.Sprintf("无法访问输入目录 %s: %v", inputDir, err)
+		if os.IsNotExist(err) {
+			if filepath.IsAbs(inputDir) {
+				errMsg = fmt.Sprintf("指定的绝对路径目录不存在: %s", inputDir)
+			} else {
+				errMsg = fmt.Sprintf("指定的目录不存在: %s", inputDir)
+			}
+		}
 		return &MergeResult{
 			Success:      false,
-			ErrorMessage: fmt.Sprintf("无法访问输入目录 %s: %v", inputDir, err),
+			ErrorMessage: errMsg,
 		}, err
 	}
+
 	if !info.IsDir() {
 		return &MergeResult{
 			Success:      false,
@@ -282,4 +302,176 @@ func GetMarkdownFiles(inputDir string) ([]MarkdownFileInfo, error) {
 	})
 
 	return mdInfos, nil
+}
+
+// MergePDFFiles 合并指定的PDF文件列表
+func MergePDFFiles(files []string, outputFile string, verbose bool) (*MergeResult, error) {
+	if len(files) == 0 {
+		return &MergeResult{
+			Success:      false,
+			ErrorMessage: "未提供任何文件",
+		}, fmt.Errorf("未提供任何文件")
+	}
+
+	// 验证每个文件是否存在且为PDF
+	validFiles := make([]string, 0, len(files))
+	for _, file := range files {
+		info, err := os.Stat(file)
+		if err != nil {
+			if verbose {
+				fmt.Printf("警告: 无法访问文件 %s: %v，已跳过\n", file, err)
+			}
+			continue
+		}
+
+		if info.IsDir() {
+			if verbose {
+				fmt.Printf("警告: %s 是一个目录，不是文件，已跳过\n", file)
+			}
+			continue
+		}
+
+		if strings.ToLower(filepath.Ext(file)) != ".pdf" {
+			if verbose {
+				fmt.Printf("警告: %s 不是一个PDF文件，已跳过\n", file)
+			}
+			continue
+		}
+
+		validFiles = append(validFiles, file)
+	}
+
+	if len(validFiles) == 0 {
+		return &MergeResult{
+			Success:      false,
+			ErrorMessage: "没有有效的PDF文件可合并",
+		}, fmt.Errorf("没有有效的PDF文件可合并")
+	}
+
+	if verbose {
+		fmt.Printf("找到 %d 个有效的PDF文件，准备合并...\n", len(validFiles))
+		for i, file := range validFiles {
+			fmt.Printf("%d: %s\n", i+1, file)
+		}
+	}
+
+	// 创建配置
+	conf := model.NewDefaultConfiguration()
+
+	// 执行合并
+	err := api.MergeCreateFile(validFiles, outputFile, false, conf)
+	if err != nil {
+		return &MergeResult{
+			Success:      false,
+			ErrorMessage: fmt.Sprintf("合并PDF文件失败: %v", err),
+		}, err
+	}
+
+	return &MergeResult{
+		Success:     true,
+		OutputPath:  outputFile,
+		MergedFiles: len(validFiles),
+		FilesList:   validFiles,
+	}, nil
+}
+
+// MergeMarkdownFilesList 合并指定的Markdown文件列表
+func MergeMarkdownFilesList(files []string, outputFile string, addTitles bool, verbose bool) (*MergeResult, error) {
+	if len(files) == 0 {
+		return &MergeResult{
+			Success:      false,
+			ErrorMessage: "未提供任何文件",
+		}, fmt.Errorf("未提供任何文件")
+	}
+
+	// 验证每个文件是否存在且为Markdown
+	validFiles := make([]string, 0, len(files))
+	for _, file := range files {
+		info, err := os.Stat(file)
+		if err != nil {
+			if verbose {
+				fmt.Printf("警告: 无法访问文件 %s: %v，已跳过\n", file, err)
+			}
+			continue
+		}
+
+		if info.IsDir() {
+			if verbose {
+				fmt.Printf("警告: %s 是一个目录，不是文件，已跳过\n", file)
+			}
+			continue
+		}
+
+		ext := strings.ToLower(filepath.Ext(file))
+		if ext != ".md" && ext != ".markdown" {
+			if verbose {
+				fmt.Printf("警告: %s 不是一个Markdown文件，已跳过\n", file)
+			}
+			continue
+		}
+
+		validFiles = append(validFiles, file)
+	}
+
+	if len(validFiles) == 0 {
+		return &MergeResult{
+			Success:      false,
+			ErrorMessage: "没有有效的Markdown文件可合并",
+		}, fmt.Errorf("没有有效的Markdown文件可合并")
+	}
+
+	if verbose {
+		fmt.Printf("找到 %d 个有效的Markdown文件，准备合并...\n", len(validFiles))
+		for i, file := range validFiles {
+			fmt.Printf("%d: %s\n", i+1, file)
+		}
+	}
+
+	// 创建输出文件
+	outFile, err := os.Create(outputFile)
+	if err != nil {
+		return &MergeResult{
+			Success:      false,
+			ErrorMessage: fmt.Sprintf("无法创建输出文件: %v", err),
+		}, err
+	}
+	defer outFile.Close()
+
+	// 合并所有Markdown文件
+	for i, mdFile := range validFiles {
+		// 读取Markdown文件内容
+		content, err := os.ReadFile(mdFile)
+		if err != nil {
+			return &MergeResult{
+				Success:      false,
+				ErrorMessage: fmt.Sprintf("读取文件 %s 失败: %v", mdFile, err),
+			}, err
+		}
+
+		// 如果需要添加标题，则添加文件名作为标题
+		if addTitles {
+			title := strings.TrimSuffix(filepath.Base(mdFile), filepath.Ext(mdFile))
+
+			// 如果不是第一个文件，先添加分隔符
+			if i > 0 {
+				outFile.WriteString("\n\n---\n\n")
+			}
+
+			// 写入标题
+			outFile.WriteString(fmt.Sprintf("# %s\n\n", title))
+		} else if i > 0 {
+			// 如果不添加标题但不是第一个文件，添加两个换行符作为分隔
+			outFile.WriteString("\n\n")
+		}
+
+		// 写入文件内容
+		outFile.Write(content)
+	}
+
+	return &MergeResult{
+		Success:     true,
+		OutputPath:  outputFile,
+		MergedFiles: len(validFiles),
+		FilesList:   validFiles,
+	}, nil
 }
