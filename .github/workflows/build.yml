@@ -1,0 +1,98 @@
+name: Build Binaries
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            output_name: file-merger
+            asset_name: file-merger-linux-amd64
+          - os: macOS-latest
+            output_name: file-merger
+            asset_name: file-merger-darwin-amd64
+          - os: windows-latest
+            output_name: file-merger.exe
+            asset_name: file-merger-windows-amd64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Build
+      run: go build -v -o ${{ matrix.output_name }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.asset_name }}
+        path: ${{ matrix.output_name }}
+        retention-days: 5
+
+  release:
+    name: Create Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: auto-build-${{ github.run_number }}
+        release_name: Automated Build ${{ github.run_number }}
+        draft: false
+        prerelease: true
+        
+    - name: Download all workflow run artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Upload Linux Binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./file-merger-linux-amd64/file-merger
+        asset_name: file-merger-linux-amd64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload macOS Binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./file-merger-darwin-amd64/file-merger
+        asset_name: file-merger-darwin-amd64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload Windows Binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./file-merger-windows-amd64/file-merger.exe
+        asset_name: file-merger-windows-amd64.exe
+        asset_content_type: application/octet-stream

@@ -16,7 +16,7 @@
 ### 从源码编译
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/liliang-cn/pdf-merger.git
 cd pdf-merger
 go build -o file-merger
 ```
