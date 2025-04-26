@@ -2,9 +2,14 @@ name: Build Binaries
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+# 添加权限设置
+permissions:
+  contents: write
+  packages: write
 
 jobs:
   build:
@@ -25,47 +30,52 @@ jobs:
             asset_name: file-merger-windows-amd64
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.21'
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
 
-    - name: Get dependencies
-      run: go mod download
+      - name: Get dependencies
+        run: go mod download
 
-    - name: Build
-      run: go build -v -o ${{ matrix.output_name }}
+      - name: Build
+        run: go build -v -o ${{ matrix.output_name }}
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.asset_name }}
-        path: ${{ matrix.output_name }}
-        retention-days: 5
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.output_name }}
+          retention-days: 5
 
   release:
     name: Create Release
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Download all workflow run artifacts
-      uses: actions/download-artifact@v4
-      
-    - name: Create Release and Upload Assets
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: auto-build-${{ github.run_number }}
-        name: Automated Build ${{ github.run_number }}
-        draft: false
-        prerelease: true
-        files: |
-          ./file-merger-linux-amd64/file-merger
-          ./file-merger-darwin-amd64/file-merger
-          ./file-merger-windows-amd64/file-merger.exe
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R ./artifacts
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: auto-build-${{ github.run_number }}
+          name: Automated Build ${{ github.run_number }}
+          draft: false
+          prerelease: true
+          files: |
+            ./artifacts/file-merger-linux-amd64/file-merger
+            ./artifacts/file-merger-darwin-amd64/file-merger
+            ./artifacts/file-merger-windows-amd64/file-merger.exe
