@@ -1,22 +1,24 @@
 # File Merger
 
-一个强大的文件合并工具，可以将 PDF 和 Markdown 文件按字符顺序合并。提供命令行界面和 HTTP API 两种使用方式，支持目录扫描和直接指定文件。
+A powerful file merging tool that can combine PDF and Markdown files in alphanumeric order. It provides both a command-line interface and HTTP API, supporting directory scanning and direct file specification.
 
-## 功能特性
+[中文文档](README_zh.md)
 
-- 合并 PDF 文件：将多个 PDF 文件合并为一个 PDF 文件
-- 合并 Markdown 文件：将多个 Markdown 文件合并为一个 Markdown 文件
-- 文件排序：按字符顺序排序所有文件
-- 直接指定文件：可以直接指定要合并的具体文件列表
-- 支持绝对路径：完全支持绝对路径和相对路径
-- 支持文件上传：可以上传文件到临时目录并进行合并
-- 命令行界面：使用 Cobra 框架提供易用的命令行工具
-- HTTP API：提供 REST API 接口，可远程调用
-- 批量处理：一次处理目录下的所有相同类型文件
+## Features
 
-## 安装
+- Merge PDF Files: Combine multiple PDF files into a single PDF file
+- Merge Markdown Files: Combine multiple Markdown files into a single Markdown document
+- File Sorting: Sort all files in alphanumeric order
+- Direct File Specification: Specify exact files to merge
+- Absolute Path Support: Full support for both absolute and relative paths
+- File Upload Support: Upload files to a temporary directory for merging
+- Command-line Interface: Easy-to-use CLI tool built with the Cobra framework
+- HTTP API: RESTful API interface for remote operation
+- Batch Processing: Process all files of the same type in a directory at once
 
-### 从源码编译
+## Installation
+
+### Build from Source
 
 ```bash
 git clone https://github.com/liliang-cn/pdf-merger.git
@@ -24,204 +26,205 @@ cd pdf-merger
 go build -o file-merger
 ```
 
-### 从发布页面下载
+### Download Pre-built Binaries
 
-直接访问项目的 [GitHub Releases](https://github.com/liliang-cn/pdf-merger/releases) 页面，下载适合您操作系统的预编译二进制文件。
+Visit the [GitHub Releases](https://github.com/liliang-cn/pdf-merger/releases) page to download pre-compiled binaries for your operating system.
 
-## 使用方法
+## Usage
 
-### 命令行模式
+### Command Line Mode
 
-**查看帮助信息:**
+**View help information:**
 
 ```bash
 ./file-merger --help
 ```
 
-**合并 PDF 文件 (目录模式):**
+**Merge PDF files (directory mode):**
 
 ```bash
-./file-merger merge -i <输入目录> -o <输出文件.pdf> -v
+./file-merger merge -i <input_directory> -o <output_file.pdf> -v
 ```
 
-**合并 PDF 文件 (指定文件模式):**
+**Merge PDF files (specific files mode):**
 
 ```bash
-./file-merger merge -f <文件1.pdf> <文件2.pdf> <文件3.pdf> -o <输出文件.pdf> -v
+./file-merger merge -f <file1.pdf> <file2.pdf> <file3.pdf> -o <output_file.pdf> -v
 ```
 
-参数说明:
+Parameter description:
 
-- `-i, --input`: 指定输入目录 (默认为当前目录)
-- `-o, --output`: 指定输出文件名 (默认为 merged.pdf)
-- `-f, --files`: 指定要合并的 PDF 文件列表 (如果提供则忽略 input 参数)
-- `-v, --verbose`: 显示详细信息
+- `-i, --input`: Specify the input directory (default is the current directory)
+- `-o, --output`: Specify the output filename (default is merged.pdf)
+- `-f, --files`: Specify the list of PDF files to merge (ignores the input parameter if provided)
+- `-v, --verbose`: Display detailed information
 
-**合并 Markdown 文件 (目录模式):**
+**Merge Markdown files (directory mode):**
 
 ```bash
-./file-merger merge-md -i <输入目录> -o <输出文件.md>
+./file-merger merge-md -i <input_directory> -o <output_file.md>
 ```
 
-**合并 Markdown 文件 (指定文件模式):**
+**Merge Markdown files (specific files mode):**
 
 ```bash
-./file-merger merge-md -f <文件1.md> <文件2.md> <文件3.md> -o <输出文件.md>
+./file-merger merge-md -f <file1.md> <file2.md> <file3.md> -o <output_file.md>
 ```
 
-参数说明:
+Parameter description:
 
-- `-i, --input`: 指定输入目录 (默认为当前目录)
-- `-o, --output`: 指定输出文件名 (默认为 merged.md)
-- `-f, --files`: 指定要合并的 Markdown 文件列表 (如果提供则忽略 input 参数)
-- `-t, --add-titles`: 是否为每个文件添加标题 (默认为 true)
-- `-v, --verbose`: 显示详细信息
+- `-i, --input`: Specify the input directory (default is the current directory)
+- `-o, --output`: Specify the output filename (default is merged.md)
+- `-f, --files`: Specify the list of Markdown files to merge (ignores the input parameter if provided)
+- `-t, --add-titles`: Whether to add titles for each file (default is true)
+- `-v, --verbose`: Display detailed information
 
-### API 服务器模式
+### API Server Mode
 
-**启动 API 服务器:**
+**Start the API server:**
 
 ```bash
 ./file-merger serve -p 8080
 ```
 
-参数说明:
+Parameter description:
 
-- `-p, --port`: 指定 API 服务器监听端口 (默认为 8080)
+- `-p, --port`: Specify the API server listening port (default is 8080)
 
-**API 端点:**
+**API Endpoints:**
 
-1. **获取目录中的 PDF 文件列表:**
-
-```bash
-curl -X GET "http://localhost:8080/api/files?dir=<目录路径>"
-```
-
-2. **获取目录中的 Markdown 文件列表:**
+1. **Get a list of PDF files in a directory:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/md-files?dir=<目录路径>"
+curl -X GET "http://localhost:8080/api/files?dir=<directory_path>"
 ```
 
-3. **合并 PDF 文件:**
+2. **Get a list of Markdown files in a directory:**
+
+```bash
+curl -X GET "http://localhost:8080/api/md-files?dir=<directory_path>"
+```
+
+3. **Merge PDF files:**
 
 ```bash
 curl -X POST "http://localhost:8080/api/merge" \
      -H "Content-Type: application/json" \
-     -d '{"inputDir": "<目录路径>", "outputFile": "output.pdf"}'
+     -d '{"inputDir": "<directory_path>", "outputFile": "output.pdf"}'
 ```
 
-4. **合并 Markdown 文件:**
+4. **Merge Markdown files:**
 
 ```bash
 curl -X POST "http://localhost:8080/api/merge-md" \
      -H "Content-Type: application/json" \
-     -d '{"inputDir": "<目录路径>", "outputFile": "output.md", "addTitles": true}'
+     -d '{"inputDir": "<directory_path>", "outputFile": "output.md", "addTitles": true}'
 ```
 
-5. **下载合并后的文件:**
+5. **Download the merged file:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/download/<文件路径>" --output downloaded_file
+curl -X GET "http://localhost:8080/api/download/<file_path>" --output downloaded_file
 ```
 
-### 新增的文件上传和临时目录 API
+### File Upload and Temporary Directory API
 
-1. **创建临时目录:**
+1. **Create a temporary directory:**
 
 ```bash
 curl -X POST "http://localhost:8080/api/temp-dir"
 ```
 
-2. **上传文件到临时目录:**
+2. **Upload file to a temporary directory:**
 
 ```bash
 curl -X POST "http://localhost:8080/api/upload" \
-     -F "tempDir=<临时目录路径>" \
-     -F "file=@<要上传的文件路径>"
+     -F "tempDir=<temp_dir_path>" \
+     -F "file=@<file_to_upload_path>"
 ```
 
-3. **列出临时目录中的文件:**
+3. **List files in a temporary directory:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/temp-files?dir=<临时目录路径>"
+curl -X GET "http://localhost:8080/api/temp-files?dir=<temp_dir_path>"
 ```
 
-4. **合并临时目录中的文件:**
+4. **Merge files in a temporary directory:**
 
 ```bash
 curl -X POST "http://localhost:8080/api/merge-files" \
      -H "Content-Type: application/json" \
-     -d '{"tempDir": "<临时目录路径>", "outputFile": "merged.pdf", "addTitles": true}'
+     -d '{"tempDir": "<temp_dir_path>", "outputFile": "merged.pdf", "addTitles": true}'
 ```
 
-5. **删除临时目录:**
+5. **Delete a temporary directory:**
 
 ```bash
 curl -X DELETE "http://localhost:8080/api/temp-dir" \
      -H "Content-Type: application/json" \
-     -d '{"tempDir": "<临时目录路径>"}'
+     -d '{"tempDir": "<temp_dir_path>"}'
 ```
 
-## 示例
+## Examples
 
-### 合并所有 PDF 教程
+### Merge all PDF tutorials
 
 ```bash
-./file-merger merge -i ./PDF -o "Kubernetes教程合集.pdf" -v
+./file-merger merge -i ./PDF -o "Kubernetes_Tutorials.pdf" -v
 ```
 
-### 合并指定的 PDF 文件（支持绝对路径）
+### Merge specific PDF files (supporting absolute paths)
 
 ```bash
-./file-merger merge -f "/Users/liliang/Things/backend/common/PDF/01｜初识容器：万事开头难.pdf" "/Users/liliang/Things/backend/common/PDF/02｜被隔离的进程：一起来看看容器的本质.pdf" -o "k8s入门.pdf" -v
+./file-merger merge -f "/Users/liliang/Things/backend/common/PDF/01_intro_to_containers.pdf" "/Users/liliang/Things/backend/common/PDF/02_isolated_processes.pdf" -o "k8s_intro.pdf" -v
 ```
 
-### 合并所有 Markdown 笔记并添加标题
+### Merge all Markdown notes with titles
 
 ```bash
-./file-merger merge-md -i ./notes -o "笔记合集.md" -t -v
+./file-merger merge-md -i ./notes -o "combined_notes.md" -t -v
 ```
 
-### 合并指定的 Markdown 文件
+### Merge specific Markdown files
 
 ```bash
-./file-merger merge-md -f "intro.md" "chapter1.md" "chapter2.md" -o "文档.md" -v
+./file-merger merge-md -f "intro.md" "chapter1.md" "chapter2.md" -o "document.md" -v
 ```
 
-## 依赖库
+## Dependencies
 
-- [github.com/spf13/cobra](https://github.com/spf13/cobra) - 命令行界面框架
-- [github.com/pdfcpu/pdfcpu](https://github.com/pdfcpu/pdfcpu) - PDF 处理库
+- [github.com/spf13/cobra](https://github.com/spf13/cobra) - Command-line interface framework
+- [github.com/pdfcpu/pdfcpu](https://github.com/pdfcpu/pdfcpu) - PDF processing library
 
-## 项目结构
+## Project Structure
 
 ```
 pdf-merger/
-├── api/                 # API服务器实现
-│   └── server.go        # HTTP API处理逻辑
-├── cmd/                 # 命令行界面实现
-│   ├── root.go          # 根命令
-│   ├── merge/           # PDF合并命令
-│   ├── merge-md/        # Markdown合并命令
-│   └── serve/           # API服务器命令
-├── pkg/                 # 核心功能包
-│   └── merger/          # 文件合并核心逻辑
-│       ├── merger.go    # 合并功能实现
-│       └── filemanager.go # 文件管理功能实现
-├── main.go              # 主程序入口
-└── README.md            # 项目文档
+├── api/                 # API server implementation
+│   └── server.go        # HTTP API handling logic
+├── cmd/                 # Command-line interface implementation
+│   ├── root.go          # Root command
+│   ├── merge/           # PDF merge command
+│   ├── merge-md/        # Markdown merge command
+│   └── serve/           # API server command
+├── pkg/                 # Core functionality packages
+│   └── merger/          # File merging core logic
+│       ├── merger.go    # Merge functionality implementation
+│       └── filemanager.go # File management implementation
+├── main.go              # Main program entry
+├── README.md            # Project documentation (English)
+└── README_zh.md         # Project documentation (Chinese)
 ```
 
-## 适用场景
+## Use Cases
 
-- 合并教程 PDF 文件为一个大文档
-- 整合多个 Markdown 笔记为一个文档
-- 使用 API 通过 Web UI 上传和合并文件
-- 处理任意路径（包括绝对路径）的文件
-- 在不同设备上调用 API 进行文件合并
-- 集成到其他系统作为文件处理服务
+- Merge tutorial PDF files into a single comprehensive document
+- Combine multiple Markdown notes into one document
+- Use API through Web UI to upload and merge files
+- Process files with arbitrary paths (including absolute paths)
+- Call the API from different devices for file merging
+- Integrate into other systems as a file processing service
 
-## 许可证
+## License
 
 [MIT](https://opensource.org/licenses/MIT)
