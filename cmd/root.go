@@ -21,8 +21,8 @@ func Execute() {
 
 func init() {
 	rootCmd = &cobra.Command{
-		Use:   "file-merger",
-		Short: "File Merger Tool",
+		Use:   "pdf-merger",
+		Short: "PDF Merger Tool (with Markdown support)",
 		Long:  `A command-line tool and API server for merging PDF and Markdown files, capable of combining all files in a specified directory into one file, sorted in alphanumeric order.`,
 	}
 

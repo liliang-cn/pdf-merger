@@ -20,7 +20,7 @@ func NewServeCommand() *cobra.Command {
 	}
 
 	// Add command line parameters
-	cmd.Flags().IntVarP(&port, "port", "p", 8080, "API server listening port")
+	cmd.Flags().IntVarP(&port, "port", "p", 6759, "API server listening port")
 
 	return cmd
 }

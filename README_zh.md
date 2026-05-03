@@ -1,4 +1,4 @@
-# File Merger
+# PDF Merger
 
 一个强大的文件合并工具，可以将 PDF 和 Markdown 文件按字符顺序合并。提供命令行界面和 HTTP API 两种使用方式，支持目录扫描和直接指定文件。
 
@@ -19,13 +19,13 @@
 
 ### 使用 Go Install 安装（推荐）
 
-安装 File Merger 最简单的方法是使用 Go 的内置 `go install` 命令：
+安装 PDF Merger 最简单的方法是使用 Go 的内置 `go install` 命令：
 
 ```bash
 go install github.com/liliang-cn/pdf-merger@latest
 ```
 
-此命令会下载、编译并将 File Merger 的最新版本安装到您的 `$GOPATH/bin` 目录中。请确保该目录已添加到您系统的 PATH 环境变量中。
+此命令会下载、编译并将 PDF Merger 的最新版本安装到您的 `$GOPATH/bin` 目录中。请确保该目录已添加到您系统的 PATH 环境变量中。
 
 ### 从发布页面下载
 
@@ -42,7 +42,7 @@ go install github.com/liliang-cn/pdf-merger@latest
 ```bash
 git clone https://github.com/liliang-cn/pdf-merger.git
 cd pdf-merger
-go build -o file-merger
+go build -o pdf-merger
 ```
 
 ## 使用方法
@@ -52,19 +52,19 @@ go build -o file-merger
 **查看帮助信息:**
 
 ```bash
-file-merger --help
+pdf-merger --help
 ```
 
 **合并 PDF 文件 (目录模式):**
 
 ```bash
-file-merger merge -i <输入目录> -o <输出文件.pdf> -v
+pdf-merger merge -i <输入目录> -o <输出文件.pdf> -v
 ```
 
 **合并 PDF 文件 (指定文件模式):**
 
 ```bash
-file-merger merge -f <文件1.pdf> <文件2.pdf> <文件3.pdf> -o <输出文件.pdf> -v
+pdf-merger merge -f <文件1.pdf> <文件2.pdf> <文件3.pdf> -o <输出文件.pdf> -v
 ```
 
 参数说明:
@@ -77,13 +77,13 @@ file-merger merge -f <文件1.pdf> <文件2.pdf> <文件3.pdf> -o <输出文件.
 **合并 Markdown 文件 (目录模式):**
 
 ```bash
-file-merger merge-md -i <输入目录> -o <输出文件.md>
+pdf-merger merge-md -i <输入目录> -o <输出文件.md>
 ```
 
 **合并 Markdown 文件 (指定文件模式):**
 
 ```bash
-file-merger merge-md -f <文件1.md> <文件2.md> <文件3.md> -o <输出文件.md>
+pdf-merger merge-md -f <文件1.md> <文件2.md> <文件3.md> -o <输出文件.md>
 ```
 
 参数说明:
@@ -99,31 +99,31 @@ file-merger merge-md -f <文件1.md> <文件2.md> <文件3.md> -o <输出文件.
 **启动 API 服务器:**
 
 ```bash
-file-merger serve -p 8080
+pdf-merger serve -p 6759
 ```
 
 参数说明:
 
-- `-p, --port`: 指定 API 服务器监听端口 (默认为 8080)
+- `-p, --port`: 指定 API 服务器监听端口 (默认为 6759)
 
 **API 端点:**
 
 1. **获取目录中的 PDF 文件列表:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/files?dir=<目录路径>"
+curl -X GET "http://localhost:6759/api/files?dir=<目录路径>"
 ```
 
 2. **获取目录中的 Markdown 文件列表:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/md-files?dir=<目录路径>"
+curl -X GET "http://localhost:6759/api/md-files?dir=<目录路径>"
 ```
 
 3. **合并 PDF 文件:**
 
 ```bash
-curl -X POST "http://localhost:8080/api/merge" \
+curl -X POST "http://localhost:6759/api/merge" \
      -H "Content-Type: application/json" \
      -d '{"inputDir": "<目录路径>", "outputFile": "output.pdf"}'
 ```
@@ -131,7 +131,7 @@ curl -X POST "http://localhost:8080/api/merge" \
 4. **合并 Markdown 文件:**
 
 ```bash
-curl -X POST "http://localhost:8080/api/merge-md" \
+curl -X POST "http://localhost:6759/api/merge-md" \
      -H "Content-Type: application/json" \
      -d '{"inputDir": "<目录路径>", "outputFile": "output.md", "addTitles": true}'
 ```
@@ -139,7 +139,7 @@ curl -X POST "http://localhost:8080/api/merge-md" \
 5. **下载合并后的文件:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/download/<文件路径>" --output downloaded_file
+curl -X GET "http://localhost:6759/api/download/<文件路径>" --output downloaded_file
 ```
 
 ### 文件上传和临时目录 API
@@ -147,13 +147,13 @@ curl -X GET "http://localhost:8080/api/download/<文件路径>" --output downloa
 1. **创建临时目录:**
 
 ```bash
-curl -X POST "http://localhost:8080/api/temp-dir"
+curl -X POST "http://localhost:6759/api/temp-dir"
 ```
 
 2. **上传文件到临时目录:**
 
 ```bash
-curl -X POST "http://localhost:8080/api/upload" \
+curl -X POST "http://localhost:6759/api/upload" \
      -F "tempDir=<临时目录路径>" \
      -F "file=@<要上传的文件路径>"
 ```
@@ -161,13 +161,13 @@ curl -X POST "http://localhost:8080/api/upload" \
 3. **列出临时目录中的文件:**
 
 ```bash
-curl -X GET "http://localhost:8080/api/temp-files?dir=<临时目录路径>"
+curl -X GET "http://localhost:6759/api/temp-files?dir=<临时目录路径>"
 ```
 
 4. **合并临时目录中的文件:**
 
 ```bash
-curl -X POST "http://localhost:8080/api/merge-files" \
+curl -X POST "http://localhost:6759/api/merge-files" \
      -H "Content-Type: application/json" \
      -d '{"tempDir": "<临时目录路径>", "outputFile": "merged.pdf", "addTitles": true}'
 ```
@@ -175,7 +175,7 @@ curl -X POST "http://localhost:8080/api/merge-files" \
 5. **删除临时目录:**
 
 ```bash
-curl -X DELETE "http://localhost:8080/api/temp-dir" \
+curl -X DELETE "http://localhost:6759/api/temp-dir" \
      -H "Content-Type: application/json" \
      -d '{"tempDir": "<临时目录路径>"}'
 ```
@@ -185,25 +185,25 @@ curl -X DELETE "http://localhost:8080/api/temp-dir" \
 ### 合并所有 PDF 教程
 
 ```bash
-file-merger merge -i ./PDF -o "Kubernetes教程合集.pdf" -v
+pdf-merger merge -i ./PDF -o "Kubernetes教程合集.pdf" -v
 ```
 
 ### 合并指定的 PDF 文件（支持绝对路径）
 
 ```bash
-file-merger merge -f "/Users/liliang/Things/backend/common/PDF/01｜初识容器：万事开头难.pdf" "/Users/liliang/Things/backend/common/PDF/02｜被隔离的进程：一起来看看容器的本质.pdf" -o "k8s入门.pdf" -v
+pdf-merger merge -f "/Users/liliang/Things/backend/common/PDF/01｜初识容器：万事开头难.pdf" "/Users/liliang/Things/backend/common/PDF/02｜被隔离的进程：一起来看看容器的本质.pdf" -o "k8s入门.pdf" -v
 ```
 
 ### 合并所有 Markdown 笔记并添加标题
 
 ```bash
-file-merger merge-md -i ./notes -o "笔记合集.md" -t -v
+pdf-merger merge-md -i ./notes -o "笔记合集.md" -t -v
 ```
 
 ### 合并指定的 Markdown 文件
 
 ```bash
-file-merger merge-md -f "intro.md" "chapter1.md" "chapter2.md" -o "文档.md" -v
+pdf-merger merge-md -f "intro.md" "chapter1.md" "chapter2.md" -o "文档.md" -v
 ```
 
 ## 依赖库
@@ -214,7 +214,7 @@ file-merger merge-md -f "intro.md" "chapter1.md" "chapter2.md" -o "文档.md" -v
 ## 项目结构
 
 ```
-file-merger/
+pdf-merger/
 ├── api/                 # API服务器实现
 │   └── server.go        # HTTP API处理逻辑
 ├── cmd/                 # 命令行界面实现

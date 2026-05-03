@@ -9,7 +9,7 @@ import (
 )
 
 // Temporary file directory prefix
-const TempDirPrefix = "file-merger-tmp-"
+const TempDirPrefix = "pdf-merger-tmp-"
 
 // File upload result information structure
 type FileUploadResult struct {
